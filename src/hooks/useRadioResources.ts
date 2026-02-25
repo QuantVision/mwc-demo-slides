@@ -160,7 +160,7 @@ export function useRadioResources(input: RadioInput): RadioResourcesState {
           const jitter = key === 'cpe' ? (Math.random() - 0.5) * 8 : (Math.random() - 0.5) * 3;
 
           let candidate = base + jitter;
-          if (anomalyActive) {
+          if (anomalyActive && !usingInput) {
             if (key === 'ue1') candidate *= 0.82;
             if (key === 'ue2') candidate *= 1.18;
           }

@@ -35,8 +35,13 @@ const STEP_SYSTEMS: Record<SimulationStep, string[]> = {
 };
 
 const DEFAULT_SNAPSHOT: TopologySnapshot = {
-  ue1: { cell: 'A', prb_pct: 52, throughput_mbps: 88, slice: 'Critical Slice (Gold)' },
-  ue2: { cell: 'B', prb_pct: 28, throughput_mbps: 54, slice: 'Best-Effort Slice (Silver)' },
+  ue1: { cell: 'A', prb_pct: 52, throughput_mbps: 88, sinr_db: 17, slice: 'Critical Slice (Gold)' },
+  ue2: { cell: 'B', prb_pct: 28, throughput_mbps: 54, sinr_db: 16, slice: 'Best-Effort Slice (Silver)' },
+  cpe: { cell: 'B', prb_pct: 32, throughput_mbps: 72, sinr_db: 18, slice: 'Fixed Wireless Access' },
+  cell_a_pci: 101,
+  cell_b_pci: 203,
+  pci_clash: false,
+  ru_b_restarting: false,
   cell_a_prb_total: 100,
   cell_a_prb_used: 64,
   cell_b_prb_total: 100,
@@ -48,7 +53,7 @@ const DEFAULT_SNAPSHOT: TopologySnapshot = {
 function initialState(): TopologyState {
   return {
     playing: true,
-    speed: 0.5,
+    speed: 0.25,
     closedLoop: true,
     tokens: [],
     events: [],
@@ -229,6 +234,7 @@ const App: React.FC = () => {
   const onToken = useCallback(() => {}, []);
 
   const { triggerAnomaly, resetSimulator } = useSimulator({
+    caseStudyId: activeCaseStudy,
     playing: state.playing,
     speed: state.speed,
     closedLoop: state.closedLoop,
@@ -262,6 +268,7 @@ const App: React.FC = () => {
   const radio = useRadioResources({
     ue1DlMbps: scenarioSnapshot.ue1.throughput_mbps,
     ue2DlMbps: scenarioSnapshot.ue2.throughput_mbps,
+    cpeDlMbps: scenarioSnapshot.cpe.throughput_mbps,
     anomalyTick,
     playing: state.playing,
   });
@@ -354,6 +361,7 @@ const App: React.FC = () => {
         }
         topologyPanel={
           <TopologyPanelStatic
+            caseStudyId={activeCaseStudy}
             highlightedNodes={state.highlightedNodes}
             now={nowRef.current}
             snapshot={scenarioSnapshot}
@@ -364,6 +372,10 @@ const App: React.FC = () => {
             radio={radio}
             ue1Cell={scenarioSnapshot.ue1.cell}
             ue2Cell={scenarioSnapshot.ue2.cell}
+            cpeCell={scenarioSnapshot.cpe.cell}
+            ue1Sinr={scenarioSnapshot.ue1.sinr_db}
+            ue2Sinr={scenarioSnapshot.ue2.sinr_db}
+            cpeSinr={scenarioSnapshot.cpe.sinr_db}
           />
         }
         stageFlowPane={

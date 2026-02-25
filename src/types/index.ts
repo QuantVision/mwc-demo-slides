@@ -105,6 +105,7 @@ export interface UeServiceSnapshot {
   cell: 'A' | 'B';
   prb_pct: number;
   throughput_mbps: number;
+  sinr_db: number;
   slice: string;
 }
 
@@ -126,6 +127,11 @@ export interface PolicySnapshot {
 export interface TopologySnapshot {
   ue1: UeServiceSnapshot;
   ue2: UeServiceSnapshot;
+  cpe: UeServiceSnapshot;
+  cell_a_pci: number;
+  cell_b_pci: number;
+  pci_clash: boolean;
+  ru_b_restarting: boolean;
   cell_a_prb_total: number;
   cell_a_prb_used: number;
   cell_b_prb_total: number;

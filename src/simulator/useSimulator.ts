@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { TopologyEvent, TopologyToken } from '../types';
+import type { CaseStudyId } from '../caseStudies/config';
 import { CaseStudy1Simulator } from './caseStudy1';
 
 interface UseSimulatorOptions {
+  caseStudyId: CaseStudyId;
   playing: boolean;
   speed: number;
   closedLoop: boolean;
@@ -11,6 +13,7 @@ interface UseSimulatorOptions {
 }
 
 export function useSimulator({
+  caseStudyId,
   playing,
   speed,
   closedLoop,
@@ -21,9 +24,9 @@ export function useSimulator({
   const playingRef = useRef(playing);
 
   useEffect(() => {
-    simulatorRef.current = new CaseStudy1Simulator({ onEvent, onToken });
+    simulatorRef.current = new CaseStudy1Simulator({ caseStudyId, onEvent, onToken });
     return () => simulatorRef.current?.stop();
-  }, [onEvent, onToken]);
+  }, [caseStudyId, onEvent, onToken]);
 
   useEffect(() => {
     const sim = simulatorRef.current;

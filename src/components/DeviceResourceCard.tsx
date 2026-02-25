@@ -5,6 +5,7 @@ interface DeviceResourceCardProps {
   subtitle?: string;
   dlMbps: number;
   ulMbps: number | null;
+  sinrDb?: number;
   allocatedPrbs: number;
   totalPrbs: number;
   sharePct: number;
@@ -33,6 +34,7 @@ const DeviceResourceCard: React.FC<DeviceResourceCardProps> = ({
   subtitle,
   dlMbps,
   ulMbps,
+  sinrDb,
   allocatedPrbs,
   totalPrbs,
   sharePct,
@@ -51,6 +53,9 @@ const DeviceResourceCard: React.FC<DeviceResourceCardProps> = ({
       <div className="device-throughput-row">
         <div className="device-throughput-main">{dlMbps.toFixed(1)} Mbps</div>
         <div className="device-throughput-secondary">UL: {ulMbps === null ? '—' : `${ulMbps.toFixed(1)} Mbps`}</div>
+        {Number.isFinite(sinrDb) && (
+          <div className="device-throughput-secondary">SINR: {(sinrDb as number).toFixed(1)} dB</div>
+        )}
         <div className="device-throughput-label">DL / UL Throughput</div>
       </div>
 

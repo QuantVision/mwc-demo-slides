@@ -567,6 +567,80 @@ body {
   pointer-events: none;
 }
 
+.overlayLinks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pci-label {
+  position: absolute;
+  min-width: 120px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(184, 221, 245, 0.65);
+  background: rgba(8, 34, 56, 0.88);
+  color: #ecf6ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: center;
+  pointer-events: none;
+}
+
+.pci-label.cell-a {
+  left: 7.8%;
+  top: 68.2%;
+}
+
+.pci-label.cell-b {
+  left: 43.8%;
+  top: 68.2%;
+}
+
+.pci-label.clash {
+  border-color: #ffbc67;
+  color: #ffe4be;
+  background: rgba(76, 42, 10, 0.9);
+  box-shadow: 0 0 0 2px rgba(255, 188, 103, 0.2);
+}
+
+.ru-restart-badge {
+  position: absolute;
+  left: 47.5%;
+  top: 73.8%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 145, 98, 0.86);
+  background: rgba(96, 34, 17, 0.92);
+  color: #ffd4b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  animation: ru-restart-pulse 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.overlayLink {
+  stroke: rgba(214, 233, 246, 0.52);
+  stroke-width: 0.0032;
+  stroke-linecap: round;
+  stroke-dasharray: 0.014 0.011;
+  animation: serving-link-flow 2.8s linear infinite;
+}
+
+.overlayLink.cpe {
+  stroke: rgba(173, 217, 245, 0.48);
+  stroke-dasharray: 0.018 0.012;
+}
+
+.overlayLink.hot {
+  stroke: rgba(255, 225, 140, 0.92);
+}
+
 .overlayMarker {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -1236,6 +1310,27 @@ body {
   46%,
   95% {
     opacity: 0.15;
+  }
+}
+
+@keyframes serving-link-flow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -0.18;
+  }
+}
+
+@keyframes ru-restart-pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
   }
 }
 

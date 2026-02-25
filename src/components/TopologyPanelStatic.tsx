@@ -2,8 +2,10 @@ import React, { useMemo, useRef } from 'react';
 import type { TopologySnapshot } from '../types';
 import { TOPOLOGY_MAP, pointInRect, clamp01, rectToPercentStyle } from '../topology/topologyMap';
 import type { NormalizedRect } from '../topology/topologyMap';
+import type { CaseStudyId } from '../caseStudies/config';
 
 interface TopologyPanelStaticProps {
+  caseStudyId: CaseStudyId;
   highlightedNodes: Record<string, number>;
   now: number;
   snapshot: TopologySnapshot;
@@ -14,6 +16,7 @@ interface Marker {
   label: string;
   x: number;
   y: number;
+  servingCell: 'A' | 'B';
   kind: 'ue' | 'cpe';
   hot: boolean;
   note: string;
@@ -45,11 +48,18 @@ function composeRect(frame: NormalizedRect, inset: NormalizedRect): NormalizedRe
   };
 }
 
-const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ highlightedNodes, now, snapshot }) => {
+const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ caseStudyId, highlightedNodes, now, snapshot }) => {
   const t = now / 1000;
+  const ue1Target = snapshot.ue1.cell === 'B' ? 1 : 0;
   const ue2Target = snapshot.ue2.cell === 'A' || snapshot.contention ? 1 : 0;
+  const effectiveCpeCell: 'A' | 'B' = caseStudyId === 'CS2' ? snapshot.ue2.cell : snapshot.cpe.cell;
+  const cpeTarget = effectiveCpeCell === 'A' ? 1 : 0;
+  const ue1BiasRef = useRef(0);
   const ue2BiasRef = useRef(0);
-  ue2BiasRef.current = lerp(ue2BiasRef.current, ue2Target, 0.05);
+  const cpeBiasRef = useRef(0);
+  ue1BiasRef.current = lerp(ue1BiasRef.current, ue1Target, 0.02);
+  ue2BiasRef.current = lerp(ue2BiasRef.current, ue2Target, 0.02);
+  cpeBiasRef.current = lerp(cpeBiasRef.current, cpeTarget, 0.03);
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -71,27 +81,66 @@ const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ highlightedNo
     const ue2Wobble = wobble(2, t);
     const cpeWobble = wobble(3, t);
 
-    const ue2AreaX = lerp(TOPOLOGY_MAP.areas.ue2.x, TOPOLOGY_MAP.areas.ue1.x, ue2BiasRef.current);
-    const ue2AreaY = lerp(TOPOLOGY_MAP.areas.ue2.y, TOPOLOGY_MAP.areas.ue1.y, ue2BiasRef.current);
-    const ue2AreaW = lerp(TOPOLOGY_MAP.areas.ue2.w, TOPOLOGY_MAP.areas.ue1.w, ue2BiasRef.current);
-    const ue2AreaH = lerp(TOPOLOGY_MAP.areas.ue2.h, TOPOLOGY_MAP.areas.ue1.h, ue2BiasRef.current);
+    const ue1Area = {
+      x: lerp(TOPOLOGY_MAP.areas.ue1A.x, TOPOLOGY_MAP.areas.ue1B.x, ue1BiasRef.current),
+      y: lerp(TOPOLOGY_MAP.areas.ue1A.y, TOPOLOGY_MAP.areas.ue1B.y, ue1BiasRef.current),
+      w: lerp(TOPOLOGY_MAP.areas.ue1A.w, TOPOLOGY_MAP.areas.ue1B.w, ue1BiasRef.current),
+      h: lerp(TOPOLOGY_MAP.areas.ue1A.h, TOPOLOGY_MAP.areas.ue1B.h, ue1BiasRef.current),
+    };
+    const ue2Area = {
+      x: lerp(TOPOLOGY_MAP.areas.ue2B.x, TOPOLOGY_MAP.areas.ue2A.x, ue2BiasRef.current),
+      y: lerp(TOPOLOGY_MAP.areas.ue2B.y, TOPOLOGY_MAP.areas.ue2A.y, ue2BiasRef.current),
+      w: lerp(TOPOLOGY_MAP.areas.ue2B.w, TOPOLOGY_MAP.areas.ue2A.w, ue2BiasRef.current),
+      h: lerp(TOPOLOGY_MAP.areas.ue2B.h, TOPOLOGY_MAP.areas.ue2A.h, ue2BiasRef.current),
+    };
+    const cpeArea = {
+      x: lerp(TOPOLOGY_MAP.areas.cpeB.x, TOPOLOGY_MAP.areas.cpeA.x, cpeBiasRef.current),
+      y: lerp(TOPOLOGY_MAP.areas.cpeB.y, TOPOLOGY_MAP.areas.cpeA.y, cpeBiasRef.current),
+      w: lerp(TOPOLOGY_MAP.areas.cpeB.w, TOPOLOGY_MAP.areas.cpeA.w, cpeBiasRef.current),
+      h: lerp(TOPOLOGY_MAP.areas.cpeB.h, TOPOLOGY_MAP.areas.cpeA.h, cpeBiasRef.current),
+    };
 
-    const ue2Area = { x: ue2AreaX, y: ue2AreaY, w: ue2AreaW, h: ue2AreaH };
-
-    const ue1Pos = pointInRect(TOPOLOGY_MAP.areas.ue1, ue1Wobble.x, ue1Wobble.y);
+    const ue1Pos = pointInRect(ue1Area, ue1Wobble.x, ue1Wobble.y);
     const ue2Pos = pointInRect(ue2Area, ue2Wobble.x, ue2Wobble.y);
-    const cpePos = pointInRect(TOPOLOGY_MAP.areas.cpe, cpeWobble.x, cpeWobble.y);
+    const cpePos = pointInRect(cpeArea, cpeWobble.x, cpeWobble.y);
 
-    const ue1Hot = snapshot.contention || inHighlightWindow(highlightedNodes, now, ['du-b', 'nonrt-ric']);
-    const ue2Hot = snapshot.contention || inHighlightWindow(highlightedNodes, now, ['du-a', 'du-b', 'ru-b']);
-    const cpeHot = inHighlightWindow(highlightedNodes, now, ['core', 'cu']);
+    const ue1Hot = true;
+    const ue2Hot = false;
+    const cpeHot = false;
 
     return [
-      { id: 'ue1', label: 'UE1', x: ue1Pos.x, y: ue1Pos.y, kind: 'ue', hot: ue1Hot, note: `Cell ${snapshot.ue1.cell}` },
-      { id: 'ue2', label: 'UE2', x: ue2Pos.x, y: ue2Pos.y, kind: 'ue', hot: ue2Hot, note: `Cell ${snapshot.ue2.cell}` },
-      { id: 'cpe', label: 'CPE', x: cpePos.x, y: cpePos.y, kind: 'cpe', hot: cpeHot, note: 'Gateway' },
+      {
+        id: 'ue1',
+        label: 'UE1',
+        x: ue1Pos.x,
+        y: ue1Pos.y,
+        servingCell: snapshot.ue1.cell,
+        kind: 'ue',
+        hot: ue1Hot,
+        note: `Cell ${snapshot.ue1.cell}`,
+      },
+      {
+        id: 'ue2',
+        label: 'UE2',
+        x: ue2Pos.x,
+        y: ue2Pos.y,
+        servingCell: snapshot.ue2.cell,
+        kind: 'ue',
+        hot: ue2Hot,
+        note: `Cell ${snapshot.ue2.cell}`,
+      },
+      {
+        id: 'cpe',
+        label: 'CPE',
+        x: cpePos.x,
+        y: cpePos.y,
+        servingCell: effectiveCpeCell,
+        kind: 'cpe',
+        hot: cpeHot,
+        note: `Cell ${effectiveCpeCell}`,
+      },
     ];
-  }, [highlightedNodes, now, snapshot, t]);
+  }, [caseStudyId, effectiveCpeCell, highlightedNodes, now, snapshot, t]);
 
   const aiOverlayRect = useMemo(
     () =>
@@ -124,6 +173,38 @@ const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ highlightedNo
           </div>
 
           <div className="overlayLayer">
+            {caseStudyId === 'CS3' && (
+              <>
+                <div className={`pci-label cell-a ${snapshot.pci_clash ? 'clash' : ''}`}>
+                  Cell A PCI: {snapshot.cell_a_pci}
+                </div>
+                <div className={`pci-label cell-b ${snapshot.pci_clash ? 'clash' : ''}`}>
+                  Cell B PCI: {snapshot.cell_b_pci}
+                </div>
+                {snapshot.ru_b_restarting && (
+                  <div className="ru-restart-badge">
+                    RU-B restarting...
+                  </div>
+                )}
+              </>
+            )}
+
+            <svg className="overlayLinks" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true">
+              {markers.map((marker) => {
+                const anchor = TOPOLOGY_MAP.servingAnchors[marker.servingCell];
+                return (
+                  <line
+                    key={`${marker.id}-serve`}
+                    x1={anchor.x}
+                    y1={anchor.y}
+                    x2={marker.x}
+                    y2={marker.y - (marker.kind === 'cpe' ? 0.02 : 0.03)}
+                    className={`overlayLink ${marker.kind} ${marker.hot ? 'hot' : ''}`}
+                  />
+                );
+              })}
+            </svg>
+
             {markers.map((marker) => (
               <div
                 key={marker.id}
@@ -140,7 +221,7 @@ const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ highlightedNo
                   <img src="/assets/CPE Icon.png" alt={marker.label} className="markerIcon cpe" />
                 )}
                 <span className="markerLabel">{marker.label}</span>
-                {marker.hot && <span className="markerRing" />}
+                {marker.id === 'ue1' && <span className="markerRing" />}
               </div>
             ))}
           </div>

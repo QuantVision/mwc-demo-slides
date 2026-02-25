@@ -6,9 +6,21 @@ interface MetricsPaneProps {
   radio: RadioResourcesState;
   ue1Cell?: 'A' | 'B';
   ue2Cell?: 'A' | 'B';
+  cpeCell?: 'A' | 'B';
+  ue1Sinr?: number;
+  ue2Sinr?: number;
+  cpeSinr?: number;
 }
 
-const MetricsPane: React.FC<MetricsPaneProps> = ({ radio, ue1Cell, ue2Cell }) => {
+const MetricsPane: React.FC<MetricsPaneProps> = ({
+  radio,
+  ue1Cell,
+  ue2Cell,
+  cpeCell,
+  ue1Sinr,
+  ue2Sinr,
+  cpeSinr,
+}) => {
   return (
     <section className="dashboard-pane metrics-pane">
       <header className="pane-header">
@@ -20,6 +32,10 @@ const MetricsPane: React.FC<MetricsPaneProps> = ({ radio, ue1Cell, ue2Cell }) =>
           radio={radio}
           ue1Cell={ue1Cell}
           ue2Cell={ue2Cell}
+          cpeCell={cpeCell}
+          ue1Sinr={ue1Sinr}
+          ue2Sinr={ue2Sinr}
+          cpeSinr={cpeSinr}
           hideTitle
           compact
         />

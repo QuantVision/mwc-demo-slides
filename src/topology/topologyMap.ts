@@ -19,6 +19,16 @@ export const TOPOLOGY_MAP = {
     ue1: { x: 0.0600, y: 0.8000, w: 0.2200, h: 0.1500 } satisfies NormalizedRect,
     ue2: { x: 0.4300, y: 0.7950, w: 0.2400, h: 0.1550 } satisfies NormalizedRect,
     cpe: { x: 0.2550, y: 0.8350, w: 0.3000, h: 0.1400 } satisfies NormalizedRect,
+    ue1A: { x: 0.0600, y: 0.8000, w: 0.2200, h: 0.1500 } satisfies NormalizedRect,
+    ue1B: { x: 0.4300, y: 0.7950, w: 0.2200, h: 0.1500 } satisfies NormalizedRect,
+    ue2A: { x: 0.1050, y: 0.8200, w: 0.1850, h: 0.1200 } satisfies NormalizedRect,
+    ue2B: { x: 0.4300, y: 0.7950, w: 0.2400, h: 0.1550 } satisfies NormalizedRect,
+    cpeA: { x: 0.1700, y: 0.8650, w: 0.1100, h: 0.0900 } satisfies NormalizedRect,
+    cpeB: { x: 0.4300, y: 0.8850, w: 0.1100, h: 0.0850 } satisfies NormalizedRect,
+  },
+  servingAnchors: {
+    A: { x: 0.195, y: 0.842 } satisfies NormalizedPoint,
+    B: { x: 0.555, y: 0.842 } satisfies NormalizedPoint,
   },
   vismon: {
     aiFrame: { x: 0.6840, y: 0.0520, w: 0.2921, h: 0.2355 } satisfies NormalizedRect,

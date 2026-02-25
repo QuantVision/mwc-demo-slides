@@ -7,6 +7,9 @@ interface RadioResourcesPanelProps {
   ue1Cell?: 'A' | 'B';
   ue2Cell?: 'A' | 'B';
   cpeCell?: 'A' | 'B';
+  ue1Sinr?: number;
+  ue2Sinr?: number;
+  cpeSinr?: number;
   hideTitle?: boolean;
   compact?: boolean;
 }
@@ -30,6 +33,9 @@ const RadioResourcesPanel: React.FC<RadioResourcesPanelProps> = ({
   ue1Cell,
   ue2Cell,
   cpeCell,
+  ue1Sinr,
+  ue2Sinr,
+  cpeSinr,
   hideTitle = false,
   compact = false,
 }) => {
@@ -112,6 +118,7 @@ const RadioResourcesPanel: React.FC<RadioResourcesPanelProps> = ({
           allocatedPrbs={radio.allocations.ue1.prbs}
           totalPrbs={radio.totalPrbs}
           sharePct={radio.allocations.ue1.sharePct}
+          sinrDb={ue1Sinr}
           history={radio.history.ue1}
           accentColor={CARD_ACCENTS.ue1}
         />
@@ -124,6 +131,7 @@ const RadioResourcesPanel: React.FC<RadioResourcesPanelProps> = ({
           allocatedPrbs={radio.allocations.ue2.prbs}
           totalPrbs={radio.totalPrbs}
           sharePct={radio.allocations.ue2.sharePct}
+          sinrDb={ue2Sinr}
           history={radio.history.ue2}
           accentColor={CARD_ACCENTS.ue2}
         />
@@ -136,6 +144,7 @@ const RadioResourcesPanel: React.FC<RadioResourcesPanelProps> = ({
           allocatedPrbs={radio.allocations.cpe.prbs}
           totalPrbs={radio.totalPrbs}
           sharePct={radio.allocations.cpe.sharePct}
+          sinrDb={cpeSinr}
           history={radio.history.cpe}
           accentColor={CARD_ACCENTS.cpe}
         />
