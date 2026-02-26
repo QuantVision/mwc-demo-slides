@@ -4,6 +4,7 @@ const druidLogo = '/assets/Druid-logo.png';
 const firecellLogo = '/assets/FireCell Logo.png';
 const benetelLogo = '/assets/Benetel-Logo.png';
 const ericssonLogo = '/assets/ericsson_logo.svg';
+const accelleranLogo = '/assets/Accelleran_NewLogo_NoBaseline Colour.svg';
 
 const PartnersFooter: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const PartnersFooter: React.FC = () => {
         <img src={firecellLogo} alt="firecell" className="partner-logo firecell" />
         <img src={ericssonLogo} alt="Ericsson" className="partner-logo ericsson" />
         <img src={benetelLogo} alt="Benetel" className="partner-logo benetel" />
+        <img src={accelleranLogo} alt="Accelleran" className="partner-logo accelleran" />
       </div>
     </div>
   );

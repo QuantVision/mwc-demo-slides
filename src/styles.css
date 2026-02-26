@@ -223,7 +223,7 @@ body {
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 28px;
 }
 
 .header-cyient-logo {
@@ -1191,8 +1191,8 @@ body {
 }
 
 .partner-logo.druid {
-  width: 66px;
-  height: 26px;
+  width: 88px;
+  height: 34px;
 }
 
 .partner-logo.firecell {
@@ -1203,6 +1203,13 @@ body {
 .partner-logo.ericsson {
   width: 126px;
   height: 26px;
+  filter: brightness(0) invert(1);
+}
+
+.partner-logo.accelleran {
+  width: 130px;
+  height: 30px;
+  object-fit: contain;
 }
 
 .partner-logo.benetel {
