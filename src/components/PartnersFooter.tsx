@@ -5,6 +5,7 @@ const firecellLogo = '/assets/FireCell Logo.png';
 const benetelLogo = '/assets/Benetel-Logo.png';
 const ericssonLogo = '/assets/ericsson_logo.svg';
 const accelleranLogo = '/assets/Accelleran_NewLogo_NoBaseline.svg';
+const mwcLogo = '/assets/mwc_logo_1.png';
 
 const PartnersFooter: React.FC = () => {
   return (
@@ -17,6 +18,7 @@ const PartnersFooter: React.FC = () => {
         <img src={benetelLogo} alt="Benetel" className="partner-logo benetel" />
         <img src={accelleranLogo} alt="Accelleran" className="partner-logo accelleran" />
       </div>
+      <img src={mwcLogo} alt="MWC26" className="mwc-event-logo" />
     </div>
   );
 };
