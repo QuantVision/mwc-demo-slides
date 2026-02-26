@@ -4,7 +4,7 @@ const druidLogo = '/assets/Druid-logo.png';
 const firecellLogo = '/assets/FireCell Logo.png';
 const benetelLogo = '/assets/Benetel-Logo.png';
 const ericssonLogo = '/assets/ericsson_logo.svg';
-const accelleranLogo = '/assets/Accelleran_NewLogo_NoBaseline Colour.svg';
+const accelleranLogo = '/assets/Accelleran_NewLogo_NoBaseline.svg';
 
 const PartnersFooter: React.FC = () => {
   return (
