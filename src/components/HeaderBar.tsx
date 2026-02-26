@@ -16,7 +16,7 @@ interface HeaderBarProps {
 }
 
 const HeaderBar: React.FC<HeaderBarProps> = ({
-  caseStudyTitle = 'Use Case 1: Configuration Integrity rApp',
+  caseStudyTitle = 'Use Case 1: Anomaly Detection & Root Cause Analysis rApp',
   playing,
   speed,
   closedLoop,

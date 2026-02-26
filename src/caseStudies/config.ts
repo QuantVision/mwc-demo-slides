@@ -51,8 +51,8 @@ export interface CaseStudyConfig {
 export const CASE_STUDIES: Record<CaseStudyId, CaseStudyConfig> = {
   CS1: {
     id: 'CS1',
-    tabLabel: 'UC1: Configuration',
-    headerTitle: 'Use Case 1: Configuration Integrity rApp',
+    tabLabel: 'UC1: Anomaly & RCA',
+    headerTitle: 'Use Case 1: Anomaly Detection & Root Cause Analysis rApp',
     narrativeTitle: 'Use Case Narrative',
     narrative: {
       idle: 'The network is stable and the demo is monitoring service quality in real time.',
@@ -133,8 +133,8 @@ export const CASE_STUDIES: Record<CaseStudyId, CaseStudyConfig> = {
   },
   CS3: {
     id: 'CS3',
-    tabLabel: 'UC3: PCI Clash',
-    headerTitle: 'Use Case 3: PCI Clash rApp',
+    tabLabel: 'UC3: NW Integrity',
+    headerTitle: 'Use Case 3: Configuration and Integrity rApp',
     narrativeTitle: 'Use Case Narrative',
     narrative: {
       idle: 'Both cells start with a PCI clash and low SINR; all devices are impacted by interference.',
