@@ -15,7 +15,7 @@ const CASE_STUDY_OPTIONS: Array<{ id: CaseStudyId; label: string }> = [
 
 const TabsRow: React.FC<TabsRowProps> = ({ activeCaseStudy, onChange }) => {
   return (
-    <div className="caseSelectorBar" role="tablist" aria-label="Case Study Selector">
+    <div className="caseSelectorBar" role="tablist" aria-label="Use Case Selector">
       {CASE_STUDY_OPTIONS.map((option) => {
         const selected = activeCaseStudy === option.id;
         return (

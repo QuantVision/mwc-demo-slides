@@ -12,7 +12,7 @@ function badgeForStep(step: SimulationStep): string {
   return step;
 }
 
-const NarrativePanel: React.FC<NarrativePanelProps> = ({ title = 'Case Study Narrative', narrative, currentStep }) => {
+const NarrativePanel: React.FC<NarrativePanelProps> = ({ title = 'Use Case Narrative', narrative, currentStep }) => {
   const stepLabel = badgeForStep(currentStep);
   const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
 

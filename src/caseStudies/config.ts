@@ -51,9 +51,9 @@ export interface CaseStudyConfig {
 export const CASE_STUDIES: Record<CaseStudyId, CaseStudyConfig> = {
   CS1: {
     id: 'CS1',
-    tabLabel: 'CS1: ADR',
-    headerTitle: 'Case Study 1: Anomaly Detection & Resolution rApp',
-    narrativeTitle: 'Case Study Narrative',
+    tabLabel: 'UC1: Configuration',
+    headerTitle: 'Use Case 1: Configuration Integrity rApp',
+    narrativeTitle: 'Use Case Narrative',
     narrative: {
       idle: 'The network is stable and the demo is monitoring service quality in real time.',
       detect: 'A service anomaly was detected and investigation has started.',
@@ -92,9 +92,9 @@ export const CASE_STUDIES: Record<CaseStudyId, CaseStudyConfig> = {
   },
   CS2: {
     id: 'CS2',
-    tabLabel: 'CS2: Network Assurance',
-    headerTitle: 'Case Study 2: Network Assurance rApp',
-    narrativeTitle: 'Case Study Narrative',
+    tabLabel: 'UC2: Network Assurance',
+    headerTitle: 'Use Case 2: Network Assurance rApp',
+    narrativeTitle: 'Use Case Narrative',
     narrative: {
       idle: 'Network Assurance rApp is tracking critical service quality and waiting for anomalies.',
       detect: 'UE2 and CPE moved into Cell A and UE1 throughput degraded under PRB contention.',
@@ -133,9 +133,9 @@ export const CASE_STUDIES: Record<CaseStudyId, CaseStudyConfig> = {
   },
   CS3: {
     id: 'CS3',
-    tabLabel: 'CS3: PCI Clash',
-    headerTitle: 'Case Study 3: PCI Clash rApp',
-    narrativeTitle: 'Case Study Narrative',
+    tabLabel: 'UC3: PCI Clash',
+    headerTitle: 'Use Case 3: PCI Clash rApp',
+    narrativeTitle: 'Use Case Narrative',
     narrative: {
       idle: 'Both cells start with a PCI clash and low SINR; all devices are impacted by interference.',
       detect: 'rApp detected PCI clash indicators from SINR and performance degradation.',
@@ -174,9 +174,9 @@ export const CASE_STUDIES: Record<CaseStudyId, CaseStudyConfig> = {
   },
   CS4: {
     id: 'CS4',
-    tabLabel: 'CS4: Intelligent Energy',
-    headerTitle: 'Case Study 4: Intelligent Energy rApp',
-    narrativeTitle: 'Case Study Narrative',
+    tabLabel: 'UC4: Intelligent Energy',
+    headerTitle: 'Use Case 4: Intelligent Energy rApp',
+    narrativeTitle: 'Use Case Narrative',
     narrative: {
       idle: 'Intelligent Energy rApp is monitoring load to find safe energy-saving windows.',
       detect: 'Energy-saving criteria were met for candidate cells and RUs.',

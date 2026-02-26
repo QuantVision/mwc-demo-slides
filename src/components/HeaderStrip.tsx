@@ -32,7 +32,7 @@ const HeaderStrip: React.FC<HeaderStripProps> = ({
         <div className="header-logo-row">
           <img src="/assets/CYIENT Logo.png" alt="Cyient" className="header-logo" />
           <div>
-            <h1 className="header-title">Case Study 1: Anomaly Detection &amp; Resolution rApp</h1>
+            <h1 className="header-title">Use Case 1: Configuration Integrity rApp</h1>
             <p className="header-subtitle">Intelligent Network Automation using rApps</p>
           </div>
         </div>
