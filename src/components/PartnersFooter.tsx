@@ -5,7 +5,7 @@ const firecellLogo = '/assets/FireCell Logo.png';
 const benetelLogo = '/assets/Benetel-Logo.png';
 const ericssonLogo = '/assets/ericsson_logo.svg';
 const accelleranLogo = '/assets/Accelleran_NewLogo_NoBaseline.svg';
-const mwcLogo = '/assets/mwc_logo_1.png';
+const mwcLogo = '/assets/mwc_logo_2.webp';
 
 const PartnersFooter: React.FC = () => {
   return (

@@ -1222,10 +1222,11 @@ body {
 
 .mwc-event-logo {
   margin-left: auto;
-  height: 44px;
-  width: 44px;
-  object-fit: contain;
-  border-radius: 8px;
+  height: 36px;
+  width: 120px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 6px;
   flex-shrink: 0;
 }
 
