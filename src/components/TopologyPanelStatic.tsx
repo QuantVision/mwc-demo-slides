@@ -189,6 +189,12 @@ const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ caseStudyId, 
               </>
             )}
 
+            {caseStudyId === 'CS4' && snapshot.ru_b_standby && (
+              <div className="ru-standby-badge">
+                ORU-2: STANDBY
+              </div>
+            )}
+
             <svg className="overlayLinks" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true">
               {markers.map((marker) => {
                 const anchor = TOPOLOGY_MAP.servingAnchors[marker.servingCell];

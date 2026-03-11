@@ -163,10 +163,17 @@ export class CaseStudy1Simulator {
       this.runCaseStudy3Sequence(traceId, 'A', 'UE1');
       return;
     }
+    if (this.caseStudyId === 'CS4') {
+      this.runCaseStudy4Sequence(traceId, 'B', 'Cell-B/C');
+      return;
+    }
     this.runAnomalySequence(traceId, 'A', 'UE1');
   }
 
   private buildSteadyRuntime(): RuntimeState {
+    if (this.caseStudyId === 'CS4') {
+      return this.buildCaseStudy4SteadyRuntime();
+    }
     if (this.caseStudyId === 'CS2') {
       return {
         snapshot: {
@@ -177,6 +184,7 @@ export class CaseStudy1Simulator {
           cell_b_pci: 203,
           pci_clash: false,
           ru_b_restarting: false,
+          ru_b_standby: false,
           cell_a_prb_total: 100,
           cell_a_prb_used: 58,
           cell_b_prb_total: 100,
@@ -205,6 +213,7 @@ export class CaseStudy1Simulator {
           cell_b_pci: CS3_PCI_CLASH,
           pci_clash: true,
           ru_b_restarting: false,
+          ru_b_standby: false,
           cell_a_prb_total: 100,
           cell_a_prb_used: 76,
           cell_b_prb_total: 100,
@@ -232,6 +241,7 @@ export class CaseStudy1Simulator {
         cell_b_pci: 203,
         pci_clash: false,
         ru_b_restarting: false,
+        ru_b_standby: false,
         cell_a_prb_total: 100,
         cell_a_prb_used: 64,
         cell_b_prb_total: 100,
@@ -247,6 +257,35 @@ export class CaseStudy1Simulator {
         ue2_cap_prb_pct: 40,
       },
       note: 'Monitoring steady-state KPIs across DU/CU/RU. No active anomaly.',
+    };
+  }
+
+  private buildCaseStudy4SteadyRuntime(): RuntimeState {
+    return {
+      snapshot: {
+        ue1: { cell: 'A', prb_pct: 42, throughput_mbps: 85, sinr_db: 17, slice: 'Critical Slice (Gold)' },
+        ue2: { cell: 'B', prb_pct: 12, throughput_mbps: 22, sinr_db: 16, slice: 'Best-Effort Slice (Silver)' },
+        cpe: { cell: 'B', prb_pct: 14, throughput_mbps: 28, sinr_db: 17, slice: 'Fixed Wireless Access' },
+        cell_a_pci: 101,
+        cell_b_pci: 203,
+        pci_clash: false,
+        ru_b_restarting: false,
+        ru_b_standby: false,
+        cell_a_prb_total: 100,
+        cell_a_prb_used: 44,
+        cell_b_prb_total: 100,
+        cell_b_prb_used: 18,
+        contention: false,
+        phase: 'steady',
+      },
+      policy: {
+        mode: this.closedLoop ? 'closed-loop' : 'open-loop',
+        decision: 'monitoring',
+        intent: 'Identify safe energy-saving windows by monitoring Cell-B/C load against standby thresholds.',
+        ue1_min_prb_pct: 36,
+        ue2_cap_prb_pct: 40,
+      },
+      note: 'Cell-B/C lightly loaded. Monitoring for energy-saving opportunity.',
     };
   }
 
@@ -1030,6 +1069,174 @@ export class CaseStudy1Simulator {
     this.schedule(t, () => this.returnToIdle(traceId));
   }
 
+  private runCaseStudy4Sequence(traceId: string, cell: 'A' | 'B', ue: string) {
+    const recommendation =
+      'Cell-B/C PRB load is below threshold. Soft-handover UE2 and CPE to Cell-A, then place ORU-2 into standby.';
+    this.phase = 'ANOMALY_ACTIVE';
+
+    this.setRuntime(
+      {
+        phase: 'contention',
+        contention: false,
+        ue2: { cell: 'B', prb_pct: 10, throughput_mbps: 18, sinr_db: 16 },
+        cpe: { cell: 'B', prb_pct: 12, throughput_mbps: 22, sinr_db: 17 },
+        cell_b_prb_used: 14,
+        ru_b_standby: false,
+      },
+      { decision: 'pending-approval' },
+      'Energy-saving trigger: Cell-B/C traffic fell below threshold. Evaluating soft-handover conditions.'
+    );
+
+    let t = 0;
+
+    this.schedule(t, () => {
+      this.emitStep('ANOMALY', 'DETECT', 'nonrt-ric', 'vismon-ai', 'warn', this.snapshotDetails(cell, ue), traceId);
+    });
+
+    t += this.pace(1600, 2200);
+    this.schedule(t, () => {
+      this.setRuntime(
+        { phase: 'enrich' },
+        { decision: 'pending-approval' },
+        'Collecting UE mobility state, QoE metrics, Cell-A headroom, and coverage overlap for VISMON Energy AI.'
+      );
+      this.emitStep('ENRICH', 'ENRICH', 'nonrt-ric', 'nonrt-ric', 'ok', this.snapshotDetails(cell, ue), traceId);
+    });
+
+    t += this.pace(1300, 1900);
+    this.schedule(t, () => {
+      this.phase = 'RCA';
+      this.setRuntime(
+        { phase: 'rca' },
+        { decision: 'pending-approval' },
+        'VISMON Energy AI evaluating PRB headroom on Cell-A, coverage continuity, and QoE impact.'
+      );
+      this.emitStep('RCA_REQ', 'RCA', 'vismon-ai', 'vismon-ai', 'ok', this.snapshotDetails(cell, ue), traceId);
+    });
+
+    t += this.pace(1100, 1700);
+    this.schedule(t, () => {
+      this.emitStep('RCA_RESP', 'RCA', 'vismon-ai', 'nonrt-ric', 'ok', this.snapshotDetails(cell, ue), traceId);
+    });
+
+    t += this.pace(1200, 1800);
+    this.schedule(t, () => {
+      this.phase = 'RECOMMEND';
+      this.setRuntime(
+        { phase: 'recommend' },
+        { decision: 'pending-approval' },
+        'Soft-handover to Cell-A confirmed safe. Recommendation: handover UE2 + CPE, place ORU-2 into standby.'
+      );
+      this.emitStep(
+        'RECO',
+        'RECOMMEND',
+        'vismon-ai',
+        'nonrt-ric',
+        'ok',
+        this.snapshotDetails(cell, ue, recommendation),
+        traceId
+      );
+    });
+
+    t += this.pace(500, 900);
+    this.schedule(t, () => {
+      this.emitStep(
+        'TICKET',
+        'RECOMMEND',
+        'nonrt-ric',
+        'noc-prompt',
+        'warn',
+        this.snapshotDetails(cell, ue, recommendation),
+        traceId
+      );
+    });
+
+    if (this.closedLoop) {
+      t += this.pace(1300, 1900);
+      this.schedule(t, () => {
+        this.phase = 'ACTION';
+        this.setRuntime(
+          {
+            phase: 'action',
+            ue2: { cell: 'A', prb_pct: 14, throughput_mbps: 24, sinr_db: 16, slice: this.runtime.snapshot.ue2.slice },
+            cpe: { cell: 'A', prb_pct: 16, throughput_mbps: 30, sinr_db: 17, slice: this.runtime.snapshot.cpe.slice },
+            cell_a_prb_used: 66,
+            cell_b_prb_used: 0,
+            ru_b_standby: true,
+          },
+          { decision: 'applied' },
+          'Soft-handover of UE2 and CPE to Cell-A complete. ORU-2 entering standby. Sliding-window observer activated.'
+        );
+        this.emitStep(
+          'ACTION',
+          'ACT',
+          'nonrt-ric',
+          'du-b',
+          'ok',
+          this.snapshotDetails('A', ue, recommendation),
+          traceId
+        );
+      });
+
+      t += this.pace(1700, 2400);
+      this.schedule(t, () => {
+        this.phase = 'VALIDATE';
+        this.setRuntime(
+          {
+            phase: 'validate',
+            ue1: { cell: 'A', prb_pct: 44, throughput_mbps: 88, sinr_db: 17, slice: this.runtime.snapshot.ue1.slice },
+            ue2: { cell: 'A', prb_pct: 16, throughput_mbps: 26, sinr_db: 16, slice: this.runtime.snapshot.ue2.slice },
+            cpe: { cell: 'A', prb_pct: 18, throughput_mbps: 32, sinr_db: 17, slice: this.runtime.snapshot.cpe.slice },
+            cell_a_prb_used: 72,
+            cell_b_prb_used: 0,
+            ru_b_standby: true,
+          },
+          { decision: 'validated' },
+          'Cell-B/C in standby. Observer tracking Cell-A load, QoE, and coverage for reactivation threshold.'
+        );
+        this.emitStep(
+          'VALIDATION',
+          'VALIDATE',
+          'du-b',
+          'nonrt-ric',
+          'ok',
+          this.snapshotDetails('A', ue, recommendation),
+          traceId
+        );
+      });
+
+      t += this.pace(2500, 3500);
+      this.schedule(t, () => {
+        this.phase = 'RESOLVED';
+        this.returnToIdle(traceId, this.buildCaseStudy4SteadyRuntime());
+      });
+      return;
+    }
+
+    // Open-loop
+    t += this.pace(1700, 2400);
+    this.schedule(t, () => {
+      this.phase = 'ESCALATED';
+      this.setRuntime(
+        { phase: 'escalate' },
+        { decision: 'held' },
+        'Open-loop mode: energy action awaits engineer approval before handover and standby execution.'
+      );
+      this.emitStep(
+        'TICKET',
+        'ESCALATE',
+        'nonrt-ric',
+        'noc-prompt',
+        'warn',
+        this.snapshotDetails(cell, ue, recommendation),
+        traceId
+      );
+    });
+
+    t += this.pace(2400, 3200);
+    this.schedule(t, () => this.returnToIdle(traceId, this.buildCaseStudy4SteadyRuntime()));
+  }
+
   private buildCaseStudy3ResolvedRuntime(): RuntimeState {
     return {
       snapshot: {
@@ -1040,6 +1247,7 @@ export class CaseStudy1Simulator {
         cell_b_pci: CS3_PCI_CELL_B_FIXED,
         pci_clash: false,
         ru_b_restarting: false,
+        ru_b_standby: false,
         cell_a_prb_total: 100,
         cell_a_prb_used: 62,
         cell_b_prb_total: 100,

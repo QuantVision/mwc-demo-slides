@@ -624,6 +624,23 @@ body {
   pointer-events: none;
 }
 
+.ru-standby-badge {
+  position: absolute;
+  left: 47.5%;
+  top: 73.8%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 180, 180, 0.8);
+  background: rgba(0, 40, 60, 0.92);
+  color: #7df0f0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  animation: ru-restart-pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
 .overlayLink {
   stroke: rgba(214, 233, 246, 0.52);
   stroke-width: 0.0032;

@@ -132,6 +132,7 @@ export interface TopologySnapshot {
   cell_b_pci: number;
   pci_clash: boolean;
   ru_b_restarting: boolean;
+  ru_b_standby: boolean;
   cell_a_prb_total: number;
   cell_a_prb_used: number;
   cell_b_prb_total: number;

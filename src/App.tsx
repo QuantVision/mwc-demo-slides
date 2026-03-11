@@ -42,6 +42,7 @@ const DEFAULT_SNAPSHOT: TopologySnapshot = {
   cell_b_pci: 203,
   pci_clash: false,
   ru_b_restarting: false,
+  ru_b_standby: false,
   cell_a_prb_total: 100,
   cell_a_prb_used: 64,
   cell_b_prb_total: 100,
