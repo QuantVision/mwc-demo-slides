@@ -147,15 +147,11 @@ const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ caseStudyId, 
   }, [caseStudyId, effectiveCpeCell, highlightedNodes, now, snapshot, t]);
 
   const aiOverlayRect = useMemo(
-    () =>
-      TOPOLOGY_MAP.vismon.aiContent ??
-      composeRect(TOPOLOGY_MAP.vismon.aiFrame, TOPOLOGY_MAP.vismon.aiContentInset),
+    () => TOPOLOGY_MAP.vismon.aiContentWindow,
     []
   );
   const energyOverlayRect = useMemo(
-    () =>
-      TOPOLOGY_MAP.vismon.energyContent ??
-      composeRect(TOPOLOGY_MAP.vismon.energyFrame, TOPOLOGY_MAP.vismon.energyContentInset),
+    () => TOPOLOGY_MAP.vismon.energyContentWindow,
     []
   );
 

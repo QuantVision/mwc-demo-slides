@@ -9,28 +9,6 @@ interface VismonAiPanelProps {
   snapshot: TopologySnapshot;
 }
 
-const HISTORY_ITEMS: Record<CaseStudyId, Array<{ tag: string; tagColor: string; label: string }>> = {
-  CS1: [
-    { tag: 'Anomaly', tagColor: '#e07820', label: 'ORAN Call Drops' },
-    { tag: 'Anomaly', tagColor: '#e07820', label: 'AN17 – 4G DCR VoLTE' },
-    { tag: 'Performance', tagColor: '#3b82f6', label: 'AN01 – 4G No Traffic' },
-  ],
-  CS2: [
-    { tag: 'Anomaly', tagColor: '#e07820', label: 'UE1 PRB Contention' },
-    { tag: 'Anomaly', tagColor: '#e07820', label: 'Cell A Overload' },
-    { tag: 'Performance', tagColor: '#3b82f6', label: 'Assurance KPI Check' },
-  ],
-  CS3: [
-    { tag: 'Integrity', tagColor: '#8b5cf6', label: 'PCI Clash – Cell B' },
-    { tag: 'Anomaly', tagColor: '#e07820', label: 'SINR Degradation' },
-    { tag: 'Integrity', tagColor: '#8b5cf6', label: 'PCI Audit – Sector 3' },
-  ],
-  CS4: [
-    { tag: 'Energy', tagColor: '#00a6a6', label: 'Cell-B/C Standby Event' },
-    { tag: 'Energy', tagColor: '#00a6a6', label: 'ORU-2 Power Save' },
-    { tag: 'Performance', tagColor: '#3b82f6', label: 'Coverage QoE Check' },
-  ],
-};
 
 const IDLE_MESSAGES: Record<CaseStudyId, string> = {
   CS1: 'Anomaly Detector rApp is continuously sensing resource usage across Cell A. No anomaly detected.',
@@ -188,7 +166,6 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
   };
 
   const bubble = getBubbleContent();
-  const historyItems = HISTORY_ITEMS[caseStudyId];
   const kpiTable = KPI_TABLES[caseStudyId];
 
   return (
@@ -207,24 +184,6 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
       </div>
 
       <div className="vai-body">
-        {/* Left sidebar */}
-        <div className="vai-sidebar">
-          <div className="vai-sidebar-nav">
-            <div className="vai-nav-item active">⌂ Home</div>
-            <div className="vai-nav-item">⌕ Search</div>
-          </div>
-          <div className="vai-history-label">History</div>
-          {historyItems.map((item, i) => (
-            <div key={i} className="vai-history-item">
-              <span className="vai-history-tag" style={{ background: item.tagColor + '33', color: item.tagColor, border: `1px solid ${item.tagColor}66` }}>
-                {item.tag}
-              </span>
-              <span className="vai-history-text">{item.label}</span>
-            </div>
-          ))}
-          <div className="vai-more-link">··· More</div>
-        </div>
-
         {/* Main chat area */}
         <div className="vai-chat">
           <div className="vai-chat-scroll">
