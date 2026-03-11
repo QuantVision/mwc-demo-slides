@@ -103,6 +103,7 @@ export class CaseStudy1Simulator {
   private onEvent: (e: TopologyEvent) => void;
   private onToken: (t: TopologyToken) => void;
   private runtime: RuntimeState;
+  private cs4PostResolutionUntil = 0;
 
   constructor(opts: SimulatorOpts) {
     this.caseStudyId = opts.caseStudyId;
@@ -289,6 +290,35 @@ export class CaseStudy1Simulator {
     };
   }
 
+  private buildCaseStudy4PostResolutionRuntime(): RuntimeState {
+    return {
+      snapshot: {
+        ue1: { cell: 'A', prb_pct: 46, throughput_mbps: 90, sinr_db: 17, slice: 'Critical Slice (Gold)' },
+        ue2: { cell: 'A', prb_pct: 18, throughput_mbps: 30, sinr_db: 16, slice: 'Best-Effort Slice (Silver)' },
+        cpe: { cell: 'A', prb_pct: 20, throughput_mbps: 34, sinr_db: 17, slice: 'Fixed Wireless Access' },
+        cell_a_pci: 101,
+        cell_b_pci: 203,
+        pci_clash: false,
+        ru_b_restarting: false,
+        ru_b_standby: false,
+        cell_a_prb_total: 100,
+        cell_a_prb_used: 72,
+        cell_b_prb_total: 100,
+        cell_b_prb_used: 0,
+        contention: false,
+        phase: 'steady',
+      },
+      policy: {
+        mode: this.closedLoop ? 'closed-loop' : 'open-loop',
+        decision: 'monitoring',
+        intent: 'Identify safe energy-saving windows by monitoring Cell-B/C load against standby thresholds.',
+        ue1_min_prb_pct: 36,
+        ue2_cap_prb_pct: 40,
+      },
+      note: 'Post-action: all devices on Cell-A. Cell-B/C standby cleared. Traffic will decay in ~30s.',
+    };
+  }
+
   private setRuntime(
     snapshotPatch: SnapshotPatch,
     policyPatch: Partial<PolicySnapshot>,
@@ -431,6 +461,63 @@ export class CaseStudy1Simulator {
             },
             { decision: 'monitoring' },
             `Persistent PCI clash detected (${CS3_PCI_CLASH}/${CS3_PCI_CLASH}) with low SINR across devices.`
+          );
+        } else if (this.caseStudyId === 'CS4') {
+          const now = Date.now();
+          const highTraffic = this.cs4PostResolutionUntil > now;
+          const baseA = highTraffic
+            ? 70 + Math.round((Math.random() - 0.5) * 6)
+            : 42 + Math.round((Math.random() - 0.5) * 4);
+          const baseB = highTraffic ? 0 : 16 + Math.round((Math.random() - 0.5) * 4);
+          this.setRuntime(
+            {
+              ue1: {
+                ...this.runtime.snapshot.ue1,
+                cell: 'A',
+                prb_pct: highTraffic
+                  ? 46 + Math.round((Math.random() - 0.5) * 4)
+                  : 40 + Math.round((Math.random() - 0.5) * 4),
+                throughput_mbps: highTraffic
+                  ? 90 + Math.round((Math.random() - 0.5) * 6)
+                  : 82 + Math.round((Math.random() - 0.5) * 4),
+                sinr_db: 17 + (Math.random() - 0.5) * 1.0,
+              },
+              ue2: {
+                ...this.runtime.snapshot.ue2,
+                cell: highTraffic ? 'A' : 'B',
+                prb_pct: highTraffic
+                  ? 18 + Math.round((Math.random() - 0.5) * 4)
+                  : 10 + Math.round((Math.random() - 0.5) * 4),
+                throughput_mbps: highTraffic
+                  ? 30 + Math.round((Math.random() - 0.5) * 4)
+                  : 20 + Math.round((Math.random() - 0.5) * 4),
+                sinr_db: 16 + (Math.random() - 0.5) * 1.0,
+              },
+              cpe: {
+                ...this.runtime.snapshot.cpe,
+                cell: highTraffic ? 'A' : 'B',
+                prb_pct: highTraffic
+                  ? 20 + Math.round((Math.random() - 0.5) * 4)
+                  : 12 + Math.round((Math.random() - 0.5) * 4),
+                throughput_mbps: highTraffic
+                  ? 34 + Math.round((Math.random() - 0.5) * 4)
+                  : 24 + Math.round((Math.random() - 0.5) * 4),
+                sinr_db: 17 + (Math.random() - 0.5) * 1.0,
+              },
+              cell_a_pci: 101,
+              cell_b_pci: 203,
+              pci_clash: false,
+              ru_b_restarting: false,
+              ru_b_standby: false,
+              cell_a_prb_used: Math.max(38, Math.min(58, baseA)),
+              cell_b_prb_used: highTraffic ? 0 : Math.max(10, Math.min(24, baseB)),
+              contention: false,
+              phase: 'steady',
+            },
+            { decision: 'monitoring' },
+            highTraffic
+              ? 'Post-action: all devices on Cell-A. Cell-B/C clearing standby. Traffic decaying to baseline.'
+              : 'Cell-B/C lightly loaded. Monitoring for energy-saving opportunity.'
           );
         } else {
           const baseA = 64 + Math.round((Math.random() - 0.5) * 4);
@@ -1208,7 +1295,8 @@ export class CaseStudy1Simulator {
       t += this.pace(2500, 3500);
       this.schedule(t, () => {
         this.phase = 'RESOLVED';
-        this.returnToIdle(traceId, this.buildCaseStudy4SteadyRuntime());
+        this.cs4PostResolutionUntil = Date.now() + 30_000;
+        this.returnToIdle(traceId, this.buildCaseStudy4PostResolutionRuntime());
       });
       return;
     }

@@ -178,7 +178,7 @@ export const CASE_STUDIES: Record<CaseStudyId, CaseStudyConfig> = {
     headerTitle: 'Use Case 4: Intelligent Energy rApp',
     narrativeTitle: 'Use Case Narrative',
     narrative: {
-      idle: 'Intelligent Energy rApp is continuously monitoring PRB load, coverage, and QoE across Cell-A and Cell-B/C to identify safe energy-saving opportunities.',
+      idle: 'Intelligent Energy rApp monitoring Cell-B/C load and QoE. Waiting for traffic to drop below the energy-saving threshold.',
       detect: 'Cell-B/C traffic has fallen below the energy-saving threshold. Soft-handover eligibility for all connected and idle devices is being assessed.',
       enrich: 'UE mobility state, QoE metrics, Cell-A residual capacity, and coverage overlap are being collected to confirm a safe handover and standby transition.',
       rca: 'VISMON Energy AI is evaluating PRB headroom on Cell-A, coverage continuity, and QoE impact to confirm Cell-B/C can safely enter standby.',
