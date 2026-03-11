@@ -281,6 +281,11 @@ const App: React.FC = () => {
 
   const activeCaseConfig = useMemo(() => CASE_STUDIES[activeCaseStudy], [activeCaseStudy]);
 
+  const lastRecommendation = useMemo(
+    () => state.events.find((e) => e.msg_type === 'RECO')?.details.recommendation,
+    [state.events]
+  );
+
   const narrativeText = useMemo(
     () => narrativeForStep(activeCaseConfig, currentStep, state.closedLoop),
     [activeCaseConfig, currentStep, state.closedLoop]
@@ -366,6 +371,8 @@ const App: React.FC = () => {
             highlightedNodes={state.highlightedNodes}
             now={nowRef.current}
             snapshot={scenarioSnapshot}
+            currentStep={currentStep}
+            lastRecommendation={lastRecommendation}
           />
         }
         metricsPane={

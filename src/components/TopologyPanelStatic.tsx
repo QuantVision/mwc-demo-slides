@@ -1,14 +1,18 @@
 import React, { useMemo, useRef } from 'react';
-import type { TopologySnapshot } from '../types';
+import type { SimulationStep, TopologySnapshot } from '../types';
 import { TOPOLOGY_MAP, pointInRect, clamp01, rectToPercentStyle } from '../topology/topologyMap';
 import type { NormalizedRect } from '../topology/topologyMap';
 import type { CaseStudyId } from '../caseStudies/config';
+import VismonAiPanel from './VismonAiPanel';
+import VismonEnergyPanel from './VismonEnergyPanel';
 
 interface TopologyPanelStaticProps {
   caseStudyId: CaseStudyId;
   highlightedNodes: Record<string, number>;
   now: number;
   snapshot: TopologySnapshot;
+  currentStep: SimulationStep;
+  lastRecommendation: string | undefined;
 }
 
 interface Marker {
@@ -48,7 +52,7 @@ function composeRect(frame: NormalizedRect, inset: NormalizedRect): NormalizedRe
   };
 }
 
-const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ caseStudyId, highlightedNodes, now, snapshot }) => {
+const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ caseStudyId, highlightedNodes, now, snapshot, currentStep, lastRecommendation }) => {
   const t = now / 1000;
   const ue1Target = snapshot.ue1.cell === 'B' ? 1 : 0;
   const ue2Target = snapshot.ue2.cell === 'A' || snapshot.contention ? 1 : 0;
@@ -162,14 +166,20 @@ const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ caseStudyId, 
           <img className="topologyBase" src="/assets/topology_frame.png" alt="Topology base" />
 
           <div className="vismon-activity vismon-ai-activity" style={rectToPercentStyle(aiOverlayRect)}>
-            <div className="vismon-ai-scan" />
-            <div className="vismon-ai-lines" />
-            <div className="vismon-ai-cursor" />
+            <VismonAiPanel
+              currentStep={currentStep}
+              caseStudyId={caseStudyId}
+              recommendation={lastRecommendation}
+              snapshot={snapshot}
+            />
           </div>
 
           <div className="vismon-activity vismon-energy-activity" style={rectToPercentStyle(energyOverlayRect)}>
-            <div className="vismon-energy-track" />
-            <div className="vismon-energy-dot" />
+            <VismonEnergyPanel
+              snapshot={snapshot}
+              now={now}
+              caseStudyId={caseStudyId}
+            />
           </div>
 
           <div className="overlayLayer">
