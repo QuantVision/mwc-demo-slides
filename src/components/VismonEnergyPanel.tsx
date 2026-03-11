@@ -109,7 +109,7 @@ const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now }) 
 
     // Y-axis labels
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = `${Math.max(6, W * 0.045)}px monospace`;
+    ctx.font = `${Math.max(5, Math.min(9, H * 0.09))}px monospace`;
     ctx.textAlign = 'right';
     gridVals.forEach((v) => {
       ctx.fillText(String(v), PAD_LEFT - 2, toY(v) + 3);

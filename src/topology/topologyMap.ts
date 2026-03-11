@@ -37,8 +37,8 @@ export const TOPOLOGY_MAP = {
     energyContentInset: { x: 0.0900, y: 0.1700, w: 0.8200, h: 0.6500 } satisfies NormalizedRect,
     aiContent: { x: 0.7153, y: 0.0716, w: 0.2603, h: 0.1816 } satisfies NormalizedRect,
     energyContent: { x: 0.7246, y: 0.4631, w: 0.2524, h: 0.1241 } satisfies NormalizedRect,
-    aiContentWindow: { x: 0.6957, y: 0.1415, w: 0.2687, h: 0.1413 } satisfies NormalizedRect,
-    energyContentWindow: { x: 0.6984, y: 0.4319, w: 0.2687, h: 0.1413 } satisfies NormalizedRect,
+    aiContentWindow: { x: 0.6816, y: 0.1149, w: 0.3096, h: 0.1559 } satisfies NormalizedRect,
+    energyContentWindow: { x: 0.6816, y: 0.4040, w: 0.3096, h: 0.1559 } satisfies NormalizedRect,
   },
   markerSizes: {
     ue: { x: 0.024, y: 0.048 } satisfies NormalizedPoint,
