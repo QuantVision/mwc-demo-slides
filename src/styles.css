@@ -1206,15 +1206,6 @@ body {
   filter: brightness(0) invert(1);
 }
 
-.partner-logo.accelleran {
-  width: 130px;
-  height: 30px;
-  object-fit: contain;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 4px;
-  padding: 3px 6px;
-}
-
 .partner-logo.benetel {
   width: 124px;
   height: 28px;
