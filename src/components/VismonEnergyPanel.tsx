@@ -21,14 +21,13 @@ const MAX_POINTS = 120;
 const SAMPLE_INTERVAL_MS = 1000;
 
 function prbToServer1(prb: number, standby: boolean): number {
-  // Cell-B/C DU+CU server: 160–210W active; ~30W when RU in standby (no baseband traffic)
-  if (standby) return 28 + (Math.random() - 0.5) * 2;
+  // RIC/SMO + CU+DU: 160–210W active; drops ~20% in standby — one less cell to process
+  if (standby) return 130 + (Math.random() - 0.5) * 4;
   return 160 + (prb / 100) * 50 + (Math.random() - 0.5) * 4;
 }
 
-function prbToServer2(prb: number, standby: boolean): number {
-  // Cell-B/C Core server: 88–108W active; ~70W in standby (core stays partly active)
-  if (standby) return 68 + (Math.random() - 0.5) * 2;
+function prbToServer2(prb: number): number {
+  // Core (AMF/UPF): independent of radio cell activity — stays flat regardless of standby
   return 88 + (prb / 100) * 20 + (Math.random() - 0.5) * 3;
 }
 
@@ -64,7 +63,7 @@ const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now, ca
     const point: DataPoint = {
       ts: now,
       server1: prbToServer1(prb, standby),
-      server2: prbToServer2(prb, standby),
+      server2: prbToServer2(prb),
       radio: prbToRadio(prb, standby),
     };
 
