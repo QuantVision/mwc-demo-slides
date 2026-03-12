@@ -15,23 +15,26 @@ interface DataPoint {
   radio: number;   // blue – Radio_5G
 }
 
-const Y_MIN = 60;
+const Y_MIN = 0;
 const Y_MAX = 240;
 const MAX_POINTS = 120;
 const SAMPLE_INTERVAL_MS = 1000;
 
-function prbToServer1(prb: number): number {
-  // Cell-B/C DU+CU server: 160–210W
+function prbToServer1(prb: number, standby: boolean): number {
+  // Cell-B/C DU+CU server: 160–210W active; ~30W when RU in standby (no baseband traffic)
+  if (standby) return 28 + (Math.random() - 0.5) * 2;
   return 160 + (prb / 100) * 50 + (Math.random() - 0.5) * 4;
 }
 
-function prbToServer2(prb: number): number {
-  // Cell-B/C Core server: 88–108W
+function prbToServer2(prb: number, standby: boolean): number {
+  // Cell-B/C Core server: 88–108W active; ~70W in standby (core stays partly active)
+  if (standby) return 68 + (Math.random() - 0.5) * 2;
   return 88 + (prb / 100) * 20 + (Math.random() - 0.5) * 3;
 }
 
-function prbToRadio(prb: number): number {
-  // Radio_5G RU: 80–140W (idle baseline 80W, full load 140W)
+function prbToRadio(prb: number, standby: boolean): number {
+  // Radio_5G RU: 80–140W active; ~8W sleep power in standby
+  if (standby) return 8 + (Math.random() - 0.5) * 1;
   return 80 + (prb / 100) * 60 + (Math.random() - 0.5) * 3;
 }
 
@@ -50,22 +53,23 @@ const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now, ca
   }, [caseStudyId]);
 
   // Sample data from snapshot at ~1s intervals
-  // CS4 = energy UC (Cell-B/C standby) → use cell_b PRB
+  // CS4 = energy UC (Cell-B/C standby) → use cell_b PRB; honour ru_b_standby for deep-sleep power
   // CS1/2/3 = integrity UCs focused on Cell-A → use cell_a PRB
   const prb = caseStudyId === 'CS4' ? snapshot.cell_b_prb_used : snapshot.cell_a_prb_used;
+  const standby = caseStudyId === 'CS4' && snapshot.ru_b_standby;
   useEffect(() => {
     if (now - lastSampleRef.current < SAMPLE_INTERVAL_MS) return;
     lastSampleRef.current = now;
 
     const point: DataPoint = {
       ts: now,
-      server1: prbToServer1(prb),
-      server2: prbToServer2(prb),
-      radio: prbToRadio(prb),
+      server1: prbToServer1(prb, standby),
+      server2: prbToServer2(prb, standby),
+      radio: prbToRadio(prb, standby),
     };
 
     bufferRef.current = [...bufferRef.current, point].slice(-MAX_POINTS);
-  }, [now, prb]);
+  }, [now, prb, standby]);
 
   // Draw chart
   useEffect(() => {
@@ -102,7 +106,7 @@ const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now, ca
       PAD_TOP + chartH - ((val - Y_MIN) / (Y_MAX - Y_MIN)) * chartH;
 
     // Grid lines
-    const gridVals = [80, 120, 160, 200];
+    const gridVals = [20, 80, 120, 160, 200];
     ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = 0.5;
     ctx.setLineDash([3, 3]);
@@ -155,7 +159,7 @@ const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now, ca
         ctx.fill();
       });
     });
-  }, [now, prb]);
+  }, [now, prb, standby]);
 
   // ResizeObserver to re-trigger paint when container resizes
   useEffect(() => {
