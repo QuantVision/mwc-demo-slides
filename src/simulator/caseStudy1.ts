@@ -45,8 +45,8 @@ const CS2_RECOMMENDATIONS = [
   'Trigger controlled UE1 handover to Cell B and preserve Cell A capacity for current burst traffic.',
 ];
 
-const CS3_PCI_CLASH = 301;
-const CS3_PCI_CELL_B_FIXED = 517;
+const CS3_PCI_CLASH = 1;
+const CS3_PCI_CELL_B_FIXED = 2;
 const CS3_RESTART_DURATION_MS = 15_000;
 const CS3_RECOMMENDATIONS = [
   `PCI clash confirmed. Keep Cell A PCI ${CS3_PCI_CLASH}, update Cell B PCI to ${CS3_PCI_CELL_B_FIXED}.`,
