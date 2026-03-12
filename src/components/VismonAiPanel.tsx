@@ -209,6 +209,20 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
     }
   }, [currentStep]);
 
+  // Hard-reset all display state whenever the active UC changes
+  useEffect(() => {
+    if (typewriterRef.current) { clearInterval(typewriterRef.current); typewriterRef.current = null; }
+    if (engineerTimerRef.current) { clearInterval(engineerTimerRef.current); engineerTimerRef.current = null; }
+    setDisplayedText('');
+    setShowTable(false);
+    setShowFeedback(false);
+    setTypedQuestion('');
+    setShowUserBubble(false);
+    setSendFlash(false);
+    lastRecoRef.current = undefined;
+    lastCaseRef.current = null;
+  }, [caseStudyId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Bubble content ───────────────────────────────────────────────────────────
   const getBubbleContent = () => {
     switch (currentStep) {

@@ -31,24 +31,32 @@ function prbToServer2(prb: number): number {
 }
 
 function prbToRadio(prb: number): number {
-  // Cell-B/C Radio_5G: 30–45W
-  return 30 + (prb / 100) * 15 + (Math.random() - 0.5) * 2;
+  // Radio_5G RU: 80–140W (idle baseline 80W, full load 140W)
+  return 80 + (prb / 100) * 60 + (Math.random() - 0.5) * 3;
 }
 
 const SITE_NAME = 'ORAN-Demo';
 
-const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now }) => {
+const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now, caseStudyId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bufferRef = useRef<DataPoint[]>([]);
   const lastSampleRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Clear chart history when switching UCs so stale data doesn't persist
+  useEffect(() => {
+    bufferRef.current = [];
+    lastSampleRef.current = 0;
+  }, [caseStudyId]);
+
   // Sample data from snapshot at ~1s intervals
+  // CS4 = energy UC (Cell-B/C standby) → use cell_b PRB
+  // CS1/2/3 = integrity UCs focused on Cell-A → use cell_a PRB
+  const prb = caseStudyId === 'CS4' ? snapshot.cell_b_prb_used : snapshot.cell_a_prb_used;
   useEffect(() => {
     if (now - lastSampleRef.current < SAMPLE_INTERVAL_MS) return;
     lastSampleRef.current = now;
 
-    const prb = snapshot.cell_b_prb_used;
     const point: DataPoint = {
       ts: now,
       server1: prbToServer1(prb),
@@ -57,7 +65,7 @@ const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now }) 
     };
 
     bufferRef.current = [...bufferRef.current, point].slice(-MAX_POINTS);
-  }, [now, snapshot.cell_b_prb_used]);
+  }, [now, prb]);
 
   // Draw chart
   useEffect(() => {
@@ -147,7 +155,7 @@ const VismonEnergyPanel: React.FC<VismonEnergyPanelProps> = ({ snapshot, now }) 
         ctx.fill();
       });
     });
-  }, [now, snapshot.cell_b_prb_used]);
+  }, [now, prb]);
 
   // ResizeObserver to re-trigger paint when container resizes
   useEffect(() => {
