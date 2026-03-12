@@ -65,7 +65,7 @@ const TOKEN_DURATION_MS: Record<MsgType, number> = {
   TICKET: 1600,
 };
 
-const EVENT_TIMING_MULTIPLIER = 1;
+const EVENT_TIMING_MULTIPLIER = 4;
 const TOKEN_TIMING_MULTIPLIER = 1.6;
 const MIN_SPEED = 0.25;
 

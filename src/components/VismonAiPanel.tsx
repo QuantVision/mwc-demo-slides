@@ -9,6 +9,7 @@ interface VismonAiPanelProps {
   snapshot: TopologySnapshot;
 }
 
+// ── Message tables ────────────────────────────────────────────────────────────
 
 const IDLE_MESSAGES: Record<CaseStudyId, string> = {
   CS1: 'Anomaly Detector rApp is continuously sensing resource usage across Cell A. No anomaly detected.',
@@ -17,18 +18,12 @@ const IDLE_MESSAGES: Record<CaseStudyId, string> = {
   CS4: 'Intelligent Energy rApp monitoring Cell-B/C PRB load and QoE. Waiting for traffic to drop below energy-saving threshold.',
 };
 
-const DETECT_MESSAGES: Record<CaseStudyId, string> = {
-  CS1: 'Service anomaly detected on Cell A. UE1 PRB degradation identified. Initiating enrichment pipeline.',
-  CS2: 'UE1 throughput degraded — UE2 and CPE migrated into Cell A causing PRB contention.',
-  CS3: 'PCI clash confirmed on Cell A and Cell B. SINR degradation affecting UE1, UE2, and CPE.',
-  CS4: 'Cell-B/C traffic fell below energy-saving threshold. Assessing soft-handover eligibility for UE2 and CPE.',
-};
-
-const ENRICH_MESSAGES: Record<CaseStudyId, string> = {
-  CS1: 'Adding UE, slice, and topology context to anomaly payload…',
-  CS2: 'Collecting load, UE mobility, and capacity context for assurance analysis…',
-  CS3: 'Enriching with PCI map, SINR trends, and neighbour cell metrics…',
-  CS4: 'Collecting UE mobility state, QoE metrics, Cell-A headroom, and coverage overlap…',
+// DETECT + ENRICH: rApp is working internally, VISMON AI is not yet queried
+const WAITING_MESSAGES: Record<CaseStudyId, string> = {
+  CS1: 'Anomaly Detector rApp is enriching the event payload. Awaiting VISMON AI query…',
+  CS2: 'Assurance rApp is collecting context. Awaiting VISMON AI query…',
+  CS3: 'Integrity rApp is enriching PCI + SINR context. Awaiting VISMON AI query…',
+  CS4: 'Energy rApp is assessing handover safety. Awaiting VISMON AI query…',
 };
 
 const RCA_MESSAGES: Record<CaseStudyId, string> = {
@@ -50,6 +45,14 @@ const ESCALATE_MESSAGES: Record<CaseStudyId, string> = {
   CS2: 'Handover recommendation escalated. Awaiting NOC approval.',
   CS3: 'PCI conflict escalated for manual optimisation review.',
   CS4: 'Energy optimisation escalated. Standby conditions require engineer confirmation.',
+};
+
+// Engineer questions typed in the input bar during RCA step
+const ENGINEER_QUESTIONS: Record<CaseStudyId, string> = {
+  CS1: "What's causing the PRB degradation on Cell A? UE1 throughput has dropped.",
+  CS2: 'UE1 critical service is degraded — is there a handover recommendation?',
+  CS3: 'SINR is degraded across UE1, UE2 and CPE. Is this a PCI conflict?',
+  CS4: 'Cell-B/C load has dropped below threshold. Is standby mode safe now?',
 };
 
 const KPI_TABLES: Record<CaseStudyId, Array<{ attr: string; detail: string }>> = {
@@ -83,6 +86,8 @@ const KPI_TABLES: Record<CaseStudyId, Array<{ attr: string; detail: string }>> =
   ],
 };
 
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 const TypingDots: React.FC = () => (
   <span className="vai-typing-dots">
     <span />
@@ -91,18 +96,78 @@ const TypingDots: React.FC = () => (
   </span>
 );
 
+// ── Main component ────────────────────────────────────────────────────────────
+
 const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
   currentStep,
   caseStudyId,
   recommendation,
 }) => {
+  // Assistant typewriter state
   const [displayedText, setDisplayedText] = useState('');
   const [showTable, setShowTable] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const typewriterRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastRecoRef = useRef<string | undefined>(undefined);
 
-  // Typewriter effect on RECOMMEND step
+  // Engineer chat state
+  const [typedQuestion, setTypedQuestion] = useState('');   // live input bar text
+  const [showUserBubble, setShowUserBubble] = useState(false); // sent user bubble
+  const [sendFlash, setSendFlash] = useState(false);           // send button flash
+  const engineerTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastCaseRef = useRef<CaseStudyId | null>(null);
+
+  // ── Engineer typing animation (RCA step) ────────────────────────────────────
+  useEffect(() => {
+    if (currentStep === 'RCA' && !showUserBubble) {
+      // Avoid re-triggering if already shown for this case
+      if (lastCaseRef.current === caseStudyId) return;
+      lastCaseRef.current = caseStudyId;
+
+      const question = ENGINEER_QUESTIONS[caseStudyId];
+      setTypedQuestion('');
+
+      if (engineerTimerRef.current) clearInterval(engineerTimerRef.current);
+
+      let i = 0;
+      engineerTimerRef.current = setInterval(() => {
+        i++;
+        setTypedQuestion(question.slice(0, i));
+        if (i >= question.length) {
+          if (engineerTimerRef.current) clearInterval(engineerTimerRef.current);
+          engineerTimerRef.current = null;
+          // Flash send button, then show user bubble
+          setSendFlash(true);
+          setTimeout(() => {
+            setSendFlash(false);
+            setShowUserBubble(true);
+            setTypedQuestion('');
+          }, 350);
+        }
+      }, 40);
+    }
+
+    return () => {
+      if (engineerTimerRef.current) clearInterval(engineerTimerRef.current);
+    };
+  }, [currentStep, caseStudyId, showUserBubble]);
+
+  // ── Reset engineer state when leaving RCA ───────────────────────────────────
+  useEffect(() => {
+    if (currentStep !== 'RCA' && currentStep !== 'RECOMMEND' &&
+        currentStep !== 'VALIDATE' && currentStep !== 'ESCALATE') {
+      if (engineerTimerRef.current) {
+        clearInterval(engineerTimerRef.current);
+        engineerTimerRef.current = null;
+      }
+      setTypedQuestion('');
+      setShowUserBubble(false);
+      setSendFlash(false);
+      lastCaseRef.current = null;
+    }
+  }, [currentStep]);
+
+  // ── Assistant typewriter on RECOMMEND ───────────────────────────────────────
   useEffect(() => {
     if (currentStep === 'RECOMMEND' && recommendation && recommendation !== lastRecoRef.current) {
       lastRecoRef.current = recommendation;
@@ -130,7 +195,7 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
     };
   }, [currentStep, recommendation]);
 
-  // Reset when leaving RECOMMEND
+  // Reset assistant state when leaving RECOMMEND
   useEffect(() => {
     if (currentStep !== 'RECOMMEND') {
       if (typewriterRef.current) {
@@ -144,18 +209,23 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
     }
   }, [currentStep]);
 
+  // ── Bubble content ───────────────────────────────────────────────────────────
   const getBubbleContent = () => {
     switch (currentStep) {
       case 'IDLE':
         return { text: IDLE_MESSAGES[caseStudyId], typing: false, amber: false };
       case 'DETECT':
-        return { text: DETECT_MESSAGES[caseStudyId], typing: true, amber: false };
       case 'ENRICH':
-        return { text: ENRICH_MESSAGES[caseStudyId], typing: true, amber: false };
+        // VISMON AI is not yet queried — show waiting state, no typing animation
+        return { text: WAITING_MESSAGES[caseStudyId], typing: false, amber: false };
       case 'RCA':
         return { text: RCA_MESSAGES[caseStudyId], typing: true, amber: false };
       case 'RECOMMEND':
-        return { text: displayedText, typing: !displayedText || displayedText.length < (recommendation?.length ?? 0), amber: false };
+        return {
+          text: displayedText,
+          typing: !displayedText || displayedText.length < (recommendation?.length ?? 0),
+          amber: false,
+        };
       case 'VALIDATE':
         return { text: VALIDATE_MESSAGES[caseStudyId], typing: false, amber: false };
       case 'ESCALATE':
@@ -167,6 +237,8 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
 
   const bubble = getBubbleContent();
   const kpiTable = KPI_TABLES[caseStudyId];
+  const inputPlaceholder = typedQuestion || 'Send a message...';
+  const isTypingInBar = typedQuestion.length > 0;
 
   return (
     <div className="vai-root">
@@ -184,9 +256,16 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
       </div>
 
       <div className="vai-body">
-        {/* Main chat area */}
         <div className="vai-chat">
           <div className="vai-chat-scroll">
+
+            {/* Engineer user bubble — appears after typing animation completes */}
+            {showUserBubble && (
+              <div className="vai-user-bubble">
+                {ENGINEER_QUESTIONS[caseStudyId]}
+              </div>
+            )}
+
             <div className="vai-assistant-label">
               <span className="vai-sparkle">✦</span> Assistant:
             </div>
@@ -196,7 +275,7 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
                 {bubble.typing && <TypingDots />}
               </span>
 
-              {/* KPI table appears after typewriter completes on RECOMMEND */}
+              {/* KPI table after typewriter completes on RECOMMEND */}
               {currentStep === 'RECOMMEND' && showTable && (
                 <table className="vai-kpi-table">
                   <thead>
@@ -225,13 +304,16 @@ const VismonAiPanel: React.FC<VismonAiPanelProps> = ({
             )}
           </div>
 
-          {/* Input bar */}
+          {/* Input bar — shows live typing during RCA step */}
           <div className="vai-input-bar">
-            <span className="vai-input-placeholder">Send a message...</span>
+            <span className={`vai-input-placeholder ${isTypingInBar ? 'typing' : ''}`}>
+              {inputPlaceholder}
+              {isTypingInBar && <span className="vai-cursor">|</span>}
+            </span>
             <div className="vai-input-icons">
               <span>🎤</span>
               <span>📎</span>
-              <span className="vai-send-btn">→</span>
+              <span className={`vai-send-btn ${sendFlash ? 'sending' : ''}`}>→</span>
             </div>
           </div>
         </div>

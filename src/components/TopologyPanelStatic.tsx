@@ -26,6 +26,56 @@ interface Marker {
   note: string;
 }
 
+// ── rApp tooltip definitions ─────────────────────────────────────────────────
+// Badge pixel positions in 2044×1819 topology_frame.png (PIL-scanned)
+// Converted to normalised stage coords (stage = 863×768 rendered, ox=12.5, oy=0, scale=0.4222)
+const RAPP_TOOLTIPS: Array<{
+  id: string;
+  label: string;
+  color: string;
+  norm: { x: number; y: number; w: number; h: number };
+  text: string;
+  activeSteps: SimulationStep[];
+  activeCases: CaseStudyId[];
+}> = [
+  {
+    id: 'rAppA',
+    label: 'rApp A',
+    color: '#155370',
+    norm: { x: 0.1115, y: 0.3282, w: 0.0979, h: 0.0412 },
+    text: 'Anomaly & Assurance\nMonitors resource usage, detects anomalies, maintains network performance',
+    activeSteps: ['DETECT', 'ENRICH', 'RCA', 'RECOMMEND', 'VALIDATE', 'ESCALATE'],
+    activeCases: ['CS1', 'CS2'],
+  },
+  {
+    id: 'rAppB',
+    label: 'rApp B',
+    color: '#CC571B',
+    norm: { x: 0.2176, y: 0.3282, w: 0.0975, h: 0.0412 },
+    text: 'Configuration Integrity\nMonitors parameter config, detects PCI clashes and settings that degrade performance',
+    activeSteps: ['DETECT', 'ENRICH', 'RCA', 'RECOMMEND', 'VALIDATE', 'ESCALATE'],
+    activeCases: ['CS3'],
+  },
+  {
+    id: 'rAppC',
+    label: 'rApp C',
+    color: '#0F7FAA',
+    norm: { x: 0.3231, y: 0.3282, w: 0.0979, h: 0.0412 },
+    text: 'Intelligent Energy\nMonitors PRB load & QoE, interacts with VISMON Energy AI to decide on cell standby',
+    activeSteps: ['DETECT', 'ENRICH', 'RCA', 'RECOMMEND', 'VALIDATE', 'ESCALATE'],
+    activeCases: ['CS4'],
+  },
+  {
+    id: 'rAppD',
+    label: 'rApp D',
+    color: '#418529',
+    norm: { x: 0.4301, y: 0.3277, w: 0.0951, h: 0.0412 },
+    text: 'Network Operations\nExecutes mobility actions, restarts RUs, applies policy changes',
+    activeSteps: ['ACT', 'VALIDATE'],
+    activeCases: ['CS1', 'CS2', 'CS3', 'CS4'],
+  },
+];
+
 function inHighlightWindow(highlightedNodes: Record<string, number>, now: number, nodeIds: string[]): boolean {
   return nodeIds.some((id) => {
     const ts = highlightedNodes[id];
@@ -236,6 +286,29 @@ const TopologyPanelStatic: React.FC<TopologyPanelStaticProps> = ({ caseStudyId, 
                 {marker.id === 'ue1' && <span className="markerRing" />}
               </div>
             ))}
+
+            {/* rApp tooltips */}
+            {RAPP_TOOLTIPS.map((rapp) => {
+              const isActive =
+                (rapp.activeCases as string[]).includes(caseStudyId) &&
+                (rapp.activeSteps as string[]).includes(currentStep);
+              if (!isActive) return null;
+              return (
+                <div
+                  key={rapp.id}
+                  className="rapp-tooltip"
+                  style={{
+                    left: `${(rapp.norm.x + rapp.norm.w / 2) * 100}%`,
+                    top: `${rapp.norm.y * 100}%`,
+                    borderColor: rapp.color,
+                  }}
+                >
+                  <div className="rapp-tooltip-label" style={{ color: rapp.color }}>{rapp.label}</div>
+                  <div className="rapp-tooltip-text">{rapp.text}</div>
+                  <div className="rapp-tooltip-arrow" style={{ borderTopColor: rapp.color }} />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

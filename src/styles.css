@@ -765,6 +765,43 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 6px;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.vai-send-btn.sending {
+  background: #60a5fa;
+  transform: scale(1.25);
+}
+
+.vai-input-placeholder.typing {
+  color: #c9d1d9;
+}
+
+.vai-cursor {
+  display: inline-block;
+  width: 1px;
+  height: 7px;
+  background: #c9d1d9;
+  margin-left: 1px;
+  vertical-align: middle;
+  animation: vai-cursor-blink 0.8s step-end infinite;
+}
+
+@keyframes vai-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.vai-user-bubble {
+  align-self: flex-end;
+  max-width: 80%;
+  background: #1d4ed8;
+  color: #ffffff;
+  border-radius: 6px 6px 2px 6px;
+  padding: 4px 6px;
+  font-size: 6.5px;
+  line-height: 1.45;
+  animation: vai-fadein 0.25s ease;
 }
 
 /* Typing dots */
@@ -794,6 +831,51 @@ body {
 @keyframes vai-fadein {
   from { opacity: 0; transform: translateY(3px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── rApp tooltips ───────────────────────────────────────────────────────── */
+.rapp-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  margin-top: -6px;
+  width: 120px;
+  background: rgba(7, 15, 28, 0.92);
+  border: 1px solid;
+  border-radius: 5px;
+  padding: 5px 7px;
+  pointer-events: none;
+  z-index: 20;
+  animation: rapp-tooltip-in 0.25s ease;
+}
+
+.rapp-tooltip-label {
+  font-size: 6.5px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.rapp-tooltip-text {
+  font-size: 5.5px;
+  color: #8b949e;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.rapp-tooltip-arrow {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid;
+}
+
+@keyframes rapp-tooltip-in {
+  from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)); }
+  to   { opacity: 1; transform: translate(-50%, -100%); }
 }
 
 /* ── VISMON Energy Panel ─────────────────────────────────────────────────── */
