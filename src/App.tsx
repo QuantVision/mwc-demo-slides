@@ -51,6 +51,23 @@ const DEFAULT_SNAPSHOT: TopologySnapshot = {
   phase: 'steady',
 };
 
+const CS3_DEFAULT_SNAPSHOT: TopologySnapshot = {
+  ue1: { cell: 'A', prb_pct: 32, throughput_mbps: 90, sinr_db: 17.2, slice: 'Critical UE Service' },
+  ue2: { cell: 'B', prb_pct: 29, throughput_mbps: 67, sinr_db: 16.1, slice: 'Best-Effort UE Service' },
+  cpe: { cell: 'B', prb_pct: 31, throughput_mbps: 80, sinr_db: 17.6, slice: 'Fixed Wireless Access' },
+  cell_a_pci: 1,
+  cell_b_pci: 2,
+  pci_clash: false,
+  ru_b_restarting: false,
+  ru_b_standby: false,
+  cell_a_prb_total: 100,
+  cell_a_prb_used: 62,
+  cell_b_prb_total: 100,
+  cell_b_prb_used: 60,
+  contention: false,
+  phase: 'steady',
+};
+
 function initialState(): TopologyState {
   return {
     playing: true,
@@ -262,8 +279,8 @@ const App: React.FC = () => {
   );
 
   const scenarioSnapshot = useMemo(
-    () => latestEvent?.details.snapshot ?? DEFAULT_SNAPSHOT,
-    [latestEvent]
+    () => latestEvent?.details.snapshot ?? (activeCaseStudy === 'CS3' ? CS3_DEFAULT_SNAPSHOT : DEFAULT_SNAPSHOT),
+    [latestEvent, activeCaseStudy]
   );
 
   const radio = useRadioResources({

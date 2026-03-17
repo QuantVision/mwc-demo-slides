@@ -45,12 +45,13 @@ const CS2_RECOMMENDATIONS = [
   'Trigger controlled UE1 handover to Cell B and preserve Cell A capacity for current burst traffic.',
 ];
 
-const CS3_PCI_CLASH = 1;
-const CS3_PCI_CELL_B_FIXED = 2;
+const CS3_PCI_A = 1;               // Cell A PCI — always stays 1
+const CS3_PCI_B_OPTIMAL = 2;       // Cell B PCI — idle & resolved state
+const CS3_PCI_B_CLASH = 4;         // Cell B PCI — anomaly state (clash with A)
 const CS3_RESTART_DURATION_MS = 15_000;
 const CS3_RECOMMENDATIONS = [
-  `PCI clash confirmed. Keep Cell A PCI ${CS3_PCI_CLASH}, update Cell B PCI to ${CS3_PCI_CELL_B_FIXED}.`,
-  `Interference pattern indicates PCI collision. Reconfigure Cell B PCI from ${CS3_PCI_CLASH} to ${CS3_PCI_CELL_B_FIXED}.`,
+  `PCI clash confirmed. Keep Cell A PCI ${CS3_PCI_A}, update Cell B PCI from ${CS3_PCI_B_CLASH} to ${CS3_PCI_B_OPTIMAL}.`,
+  `Interference pattern indicates PCI collision. Reconfigure Cell B PCI from ${CS3_PCI_B_CLASH} to ${CS3_PCI_B_OPTIMAL}.`,
 ];
 
 const TOKEN_DURATION_MS: Record<MsgType, number> = {
@@ -207,29 +208,29 @@ export class CaseStudy1Simulator {
     if (this.caseStudyId === 'CS3') {
       return {
         snapshot: {
-          ue1: { cell: 'A', prb_pct: 44, throughput_mbps: 48, sinr_db: 4.5, slice: 'Critical UE Service' },
-          ue2: { cell: 'B', prb_pct: 33, throughput_mbps: 39, sinr_db: 5.0, slice: 'Best-Effort UE Service' },
-          cpe: { cell: 'B', prb_pct: 39, throughput_mbps: 52, sinr_db: 4.2, slice: 'Fixed Wireless Access' },
-          cell_a_pci: CS3_PCI_CLASH,
-          cell_b_pci: CS3_PCI_CLASH,
-          pci_clash: true,
+          ue1: { cell: 'A', prb_pct: 32, throughput_mbps: 90, sinr_db: 17.2, slice: 'Critical UE Service' },
+          ue2: { cell: 'B', prb_pct: 29, throughput_mbps: 67, sinr_db: 16.1, slice: 'Best-Effort UE Service' },
+          cpe: { cell: 'B', prb_pct: 31, throughput_mbps: 80, sinr_db: 17.6, slice: 'Fixed Wireless Access' },
+          cell_a_pci: CS3_PCI_A,
+          cell_b_pci: CS3_PCI_B_OPTIMAL,
+          pci_clash: false,
           ru_b_restarting: false,
           ru_b_standby: false,
           cell_a_prb_total: 100,
-          cell_a_prb_used: 76,
+          cell_a_prb_used: 62,
           cell_b_prb_total: 100,
-          cell_b_prb_used: 72,
-          contention: true,
+          cell_b_prb_used: 60,
+          contention: false,
           phase: 'steady',
         },
         policy: {
           mode: this.closedLoop ? 'closed-loop' : 'open-loop',
           decision: 'monitoring',
-          intent: 'Detect and resolve PCI clash while preserving service continuity through controlled handovers.',
+          intent: 'Monitor PCI assignments and SINR to detect potential clashes.',
           ue1_min_prb_pct: 36,
           ue2_cap_prb_pct: 42,
         },
-        note: `Cells start degraded with PCI clash (${CS3_PCI_CLASH}/${CS3_PCI_CLASH}) and low SINR.`,
+        note: `Cells operating normally — Cell A PCI ${CS3_PCI_A}, Cell B PCI ${CS3_PCI_B_OPTIMAL}. Good SINR.`,
       };
     }
 
@@ -450,8 +451,8 @@ export class CaseStudy1Simulator {
                 throughput_mbps: 53 + Math.round((Math.random() - 0.5) * 6),
                 sinr_db: 4.3 + (Math.random() - 0.5) * 0.9,
               },
-              cell_a_pci: CS3_PCI_CLASH,
-              cell_b_pci: CS3_PCI_CLASH,
+              cell_a_pci: CS3_PCI_A,
+              cell_b_pci: CS3_PCI_B_CLASH,
               pci_clash: true,
               ru_b_restarting: false,
               cell_a_prb_used: Math.max(66, Math.min(84, baseA)),
@@ -460,7 +461,7 @@ export class CaseStudy1Simulator {
               phase: 'steady',
             },
             { decision: 'monitoring' },
-            `Persistent PCI clash detected (${CS3_PCI_CLASH}/${CS3_PCI_CLASH}) with low SINR across devices.`
+            `Persistent PCI clash detected (${CS3_PCI_A}/${CS3_PCI_B_CLASH}) with low SINR across devices.`
           );
         } else if (this.caseStudyId === 'CS4') {
           const now = Date.now();
@@ -947,8 +948,8 @@ export class CaseStudy1Simulator {
         contention: true,
         pci_clash: true,
         ru_b_restarting: false,
-        cell_a_pci: CS3_PCI_CLASH,
-        cell_b_pci: CS3_PCI_CLASH,
+        cell_a_pci: CS3_PCI_A,
+        cell_b_pci: CS3_PCI_B_CLASH,
         ue1: { cell: 'A', prb_pct: 46, throughput_mbps: 46, sinr_db: 4.1 },
         ue2: { cell: 'B', prb_pct: 35, throughput_mbps: 37, sinr_db: 4.7 },
         cpe: { cell: 'B', prb_pct: 40, throughput_mbps: 49, sinr_db: 3.8 },
@@ -956,7 +957,7 @@ export class CaseStudy1Simulator {
         cell_b_prb_used: 76,
       },
       { decision: 'pending-approval' },
-      `PCI clash active: Cell A and Cell B both use PCI ${CS3_PCI_CLASH}; SINR is degraded for UE1, UE2, and CPE.`
+      `PCI clash active: Cell B changed to PCI ${CS3_PCI_B_CLASH}, clashing with Cell A PCI ${CS3_PCI_A}; SINR is degraded.`
     );
 
     let t = 0;
@@ -997,7 +998,7 @@ export class CaseStudy1Simulator {
       this.setRuntime(
         { phase: 'recommend' },
         { decision: 'pending-approval' },
-        `Recommendation: move users out of Cell B, lock RU-B, change PCI to ${CS3_PCI_CELL_B_FIXED}, reboot, then reattach.`
+        `Recommendation: move users out of Cell B, lock RU-B, change PCI to ${CS3_PCI_B_OPTIMAL}, reboot, then reattach.`
       );
       this.emitStep(
         'RECO',
@@ -1055,13 +1056,13 @@ export class CaseStudy1Simulator {
         this.setRuntime(
           {
             phase: 'action',
-            cell_b_pci: CS3_PCI_CELL_B_FIXED,
+            cell_b_pci: CS3_PCI_B_OPTIMAL,
             pci_clash: true,
             ru_b_restarting: true,
             cell_b_prb_used: 0,
           },
           { decision: 'applied' },
-          `RU-B is restarting with new PCI ${CS3_PCI_CELL_B_FIXED}. Users remain on Cell A during reboot.`
+          `RU-B is restarting with new PCI ${CS3_PCI_B_OPTIMAL}. Users remain on Cell A during reboot.`
         );
         this.emitStep(
           'ACTION',
@@ -1084,7 +1085,7 @@ export class CaseStudy1Simulator {
             cell_b_prb_used: 18,
           },
           { decision: 'applied' },
-          `RU-B reboot completed with PCI ${CS3_PCI_CELL_B_FIXED}. PCI clash cleared.`
+          `RU-B reboot completed with PCI ${CS3_PCI_B_OPTIMAL}. PCI clash cleared.`
         );
         this.emitStep(
           'ACTION',
@@ -1331,8 +1332,8 @@ export class CaseStudy1Simulator {
         ue1: { cell: 'A', prb_pct: 31, throughput_mbps: 90, sinr_db: 17.4, slice: 'Critical UE Service' },
         ue2: { cell: 'B', prb_pct: 29, throughput_mbps: 67, sinr_db: 16.3, slice: 'Best-Effort UE Service' },
         cpe: { cell: 'B', prb_pct: 33, throughput_mbps: 82, sinr_db: 17.8, slice: 'Fixed Wireless Access' },
-        cell_a_pci: CS3_PCI_CLASH,
-        cell_b_pci: CS3_PCI_CELL_B_FIXED,
+        cell_a_pci: CS3_PCI_A,
+        cell_b_pci: CS3_PCI_B_OPTIMAL,
         pci_clash: false,
         ru_b_restarting: false,
         ru_b_standby: false,
@@ -1350,7 +1351,7 @@ export class CaseStudy1Simulator {
         ue1_min_prb_pct: 36,
         ue2_cap_prb_pct: 42,
       },
-      note: `PCI clash resolved. Cell A PCI ${CS3_PCI_CLASH}, Cell B PCI ${CS3_PCI_CELL_B_FIXED}. SINR recovered.`,
+      note: `PCI clash resolved. Cell A PCI ${CS3_PCI_A}, Cell B PCI ${CS3_PCI_B_OPTIMAL}. SINR recovered.`,
     };
   }
 
